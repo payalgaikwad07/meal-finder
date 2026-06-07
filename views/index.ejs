@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meal Finder</title>
+  <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body>
+
+  <header>
+    <h1>Find Your Next Meal</h1>
+    <p>Search by name, explore by cuisine, or get a surprise</p>
+  </header>
+
+  <main>
+
+    <!-- TAB BUTTONS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('name', this)">By Name</button>
+      <button class="tab" onclick="switchTab('cuisine', this)">By Cuisine</button>
+      <button class="tab" onclick="switchTab('random', this)">Random</button>
+    </div>
+
+    <!-- TAB 1: SEARCH BY NAME -->
+    <div id="panel-name" class="panel active">
+      <form action="/search/name" method="POST">
+        <input type="text" name="mealName" placeholder="e.g. pasta, sushi, burger..." required />
+        <button type="submit">Search</button>
+      </form>
+    </div>
+
+    <!-- TAB 2: SEARCH BY CUISINE -->
+    <div id="panel-cuisine" class="panel">
+      <form action="/search/cuisine" method="POST">
+        <select name="cuisine">
+          <option value="Indian">Indian</option>
+          <option value="Italian">Italian</option>
+          <option value="Japanese">Japanese</option>
+          <option value="Mexican">Mexican</option>
+          <option value="British">British</option>
+          <option value="Chinese">Chinese</option>
+          <option value="French">French</option>
+          <option value="American">American</option>
+          <option value="Thai">Thai</option>
+          <option value="Greek">Greek</option>
+        </select>
+        <button type="submit">Explore</button>
+      </form>
+    </div>
+
+    <!-- TAB 3: RANDOM MEAL -->
+    <div id="panel-random" class="panel">
+      <form action="/search/random" method="POST">
+        <button type="submit">Surprise Me!</button>
+      </form>
+    </div>
+
+    <!-- ERROR MESSAGE (shown only if error exists) -->
+    <% if (typeof error !== 'undefined' && error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+  </main>
+
+  <script src="/scripts/main.js"></script>
+</body>
+</html>

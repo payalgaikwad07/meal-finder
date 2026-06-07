@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meal Finder - Results</title>
+  <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body>
+
+  <header>
+    <h1>Find Your Next Meal</h1>
+    <p>Search by name, explore by cuisine, or get a surprise</p>
+    <a href="/" class="back-btn">Back to Search</a>
+  </header>
+
+  <main>
+
+    <!-- SEARCH QUERY LABEL -->
+    <% if (typeof query !== 'undefined' && query) { %>
+      <p class="results-label">Showing results for: <strong><%= query %></strong></p>
+    <% } %>
+
+    <!-- NO RESULTS MESSAGE -->
+    <% if (!meals || meals.length === 0) { %>
+      <p class="no-results">No meals found. Try a different search!</p>
+
+    <% } else { %>
+
+      <!-- MEAL CARDS GRID -->
+      <div class="cards">
+        <% meals.forEach(function(meal) { %>
+          <div class="card">
+
+            <!-- MEAL IMAGE from API (strMealThumb) -->
+            <img src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>" />
+
+            <div class="card-body">
+              <h2><%= meal.strMeal %></h2>
+
+              <!-- CATEGORY (only available on full meal detail) -->
+              <% if (meal.strCategory) { %>
+                <p class="category"><%= meal.strCategory %></p>
+              <% } %>
+
+              <!-- CUISINE/AREA (only available on full meal detail) -->
+              <% if (meal.strArea) { %>
+                <p class="area"><%= meal.strArea %></p>
+              <% } %>
+
+              <!-- INSTRUCTIONS (only available on full meal detail) -->
+              <% if (meal.strInstructions) { %>
+                <p class="instructions"><%= meal.strInstructions.substring(0, 120) %>...</p>
+              <% } %>
+
+              <!-- YOUTUBE LINK (only available on full meal detail) -->
+              <% if (meal.strYoutube) { %>
+                <a href="<%= meal.strYoutube %>" target="_blank" class="yt-btn">Watch Recipe Video</a>
+              <% } %>
+
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+    <% } %>
+
+  </main>
+
+  <script src="/scripts/main.js"></script>
+</body>
+</html>
