@@ -54,9 +54,22 @@
               <% } %>
 
               <!-- YOUTUBE LINK (only available on full meal detail) -->
-              <% if (meal.strYoutube) { %>
-                <a href="<%= meal.strYoutube %>" target="_blank" class="yt-btn">Watch Recipe Video</a>
-              <% } %>
+              <!-- <% if (meal.strYoutube) { %>
+                <a href="<%= meal.strYoutube %>" target="_blank" class="yt-btn">▶ Watch Video</a>
+              <% } %> -->
+
+              <!-- VIEW FULL RECIPE BUTTON - works for every meal -->
+              <a href="/meal/<%= meal.idMeal %>" class="yt-btn recipe-btn">📖 View Recipe</a>
+
+              
+
+              <!-- <div class="btn-group">
+              <a href="https://www.google.com/search?q=<%= encodeURIComponent(meal.strMeal) %>+recipe" 
+                target="_blank" class="yt-btn recipe-btn">📖 Full Recipe</a>
+
+              <a href="https://www.youtube.com/results?search_query=<%= encodeURIComponent(meal.strMeal) %>+recipe" 
+                target="_blank" class="yt-btn">▶ Watch Video</a>
+            </div> -->
 
             </div>
           </div>

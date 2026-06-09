@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= meal.strMeal %></title>
+  <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body>
+
+  <header>
+    <h1><%= meal.strMeal %></h1>
+    <p><%= meal.strArea %> • <%= meal.strCategory %></p>
+    <a href="/" class="back-btn">Back to Search</a>
+  </header>
+
+  <main>
+    <div class="detail-container">
+      
+      <!-- IMAGE -->
+      <img src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>" class="detail-img" />
+
+      <!-- TAGS -->
+      <p class="category"><%= meal.strCategory %></p>
+      <p class="area"><%= meal.strArea %></p>
+
+      <!-- INGREDIENTS -->
+    <h2>Ingredients</h2>
+    <ul class="ingredients-list">
+    <% for(let i = 1; i <= 20; i++) { %>
+        <% if(meal['strIngredient' + i]) { %>
+        <li>
+            <img src="https://www.themealdb.com/images/ingredients/<%= meal['strIngredient' + i] %>-Small.png" 
+                alt="<%= meal['strIngredient' + i] %>" />
+            <%= meal['strMeasure' + i] %> <%= meal['strIngredient' + i] %>
+        </li>
+        <% } %>
+    <% } %>
+    </ul>
+
+      <!-- INSTRUCTIONS -->
+      <h2>Instructions</h2>
+      <p class="detail-instructions"><%= meal.strInstructions %></p>
+
+      <!-- YOUTUBE -->
+      <% if (meal.strYoutube) { %>
+        <a href="<%= meal.strYoutube %>" target="_blank" class="yt-btn">▶ Watch Video</a>
+      <% } %>
+
+    </div>
+  </main>
+
+</body>
+</html>

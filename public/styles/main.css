@@ -1,0 +1,356 @@
+/* ===== RESET & BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff8f0;
+  color: #3d2c1e;
+  min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+header {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  position: relative;
+}
+
+header h1 {
+  font-size: 2.5rem;
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.5px;
+}
+
+header p {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 0;
+}
+
+.back-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 8px 20px;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 50px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  border: 1.5px solid rgba(255,255,255,0.5);
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+/* ===== MAIN CONTAINER ===== */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 10px 24px;
+  border-radius: 50px;
+  border: 2px solid #ff6b35;
+  background: transparent;
+  color: #ff6b35;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  background: #fff0e6;
+}
+
+.tab.active {
+  background: #ff6b35;
+  color: #fff;
+}
+
+/* ===== PANELS ===== */
+.panel {
+  display: none;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1.5px solid #ffd4b3;
+  margin-bottom: 1.5rem;
+}
+
+.panel.active {
+  display: block;
+}
+
+/* ===== FORMS ===== */
+form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+input[type="text"],
+select {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
+  border-radius: 50px;
+  border: 1.5px solid #ffd4b3;
+  background: #fff8f0;
+  color: #3d2c1e;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+input[type="text"]:focus,
+select:focus {
+  border-color: #ff6b35;
+}
+
+/* ===== BUTTONS ===== */
+button[type="submit"] {
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: none;
+  background: #ff6b35;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+button[type="submit"]:hover {
+  background: #e85d28;
+}
+
+button[type="submit"]:active {
+  transform: scale(0.97);
+}
+
+.random-btn {
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 14px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.random-btn:hover {
+  opacity: 0.9;
+}
+
+.random-btn:active {
+  transform: scale(0.98);
+}
+
+/* ===== RESULTS LABEL ===== */
+.results-label {
+  font-size: 1rem;
+  color: #7a5c44;
+  margin-bottom: 1.2rem;
+}
+
+.results-label strong {
+  color: #ff6b35;
+}
+
+/* ===== NO RESULTS ===== */
+.no-results {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #b07050;
+  padding: 3rem;
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px dashed #ffd4b3;
+}
+
+/* ===== ERROR ===== */
+.error {
+  text-align: center;
+  font-size: 1rem;
+  color: #c0392b;
+  background: #fdecea;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+  border: 1px solid #f5c6cb;
+}
+
+/* ===== CARDS GRID ===== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+/* ===== SINGLE CARD ===== */
+.card {
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1.5px solid #ffd4b3;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(255, 107, 53, 0.15);
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.card-body {
+  padding: 14px 16px;
+}
+
+.card-body h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #3d2c1e;
+  margin-bottom: 6px;
+}
+
+.category,
+.area {
+  display: inline-block;
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 50px;
+  margin-right: 5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.category {
+  background: #fff0e6;
+  color: #cc5500;
+}
+
+.area {
+  background: #e6f7ee;
+  color: #1e7a45;
+}
+
+.instructions {
+  font-size: 0.85rem;
+  color: #7a5c44;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.yt-btn {
+  display: block;
+  text-align: center;
+  padding: 9px;
+  border-radius: 50px;
+  background: #ff6b35;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.yt-btn:hover {
+  background: #e85d28;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 1.8rem;
+  }
+
+  .cards {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .card img {
+    height: 140px;
+  }
+}
+
+.detail-container {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1.5px solid #ffd4b3;
+}
+
+.detail-img {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 16px;
+  display: block;
+  margin-bottom: 1.5rem;
+}
+
+.detail-instructions {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #3d2c1e;
+  margin: 1rem 0 1.5rem;
+  white-space: pre-line;
+}
+
+ /* for ingridients */
+.ingredients-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 1rem 0 1.5rem;
+}
+
+.ingredients-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff8f0;
+  padding: 6px 10px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  color: #3d2c1e;
+  border: 1px solid #ffd4b3;
+}
+
+.ingredients-list li img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
