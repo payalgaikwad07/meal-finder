@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title : 'Meal Planner & Recipe Assistant' %></title>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body>
+
+  <!-- Premium Glassmorphic Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">
+        <span class="brand-emoji">🍽️</span> 
+        <span class="brand-text">YumPlan</span>
+      </a>
+      
+      <ul class="nav-menu">
+        <li><a href="/#search-section" class="nav-link">Search</a></li>
+        <% if (user) { %>
+          <li><a href="/leftovers" class="nav-link">What Can I Cook?</a></li>
+          <li><a href="/cookbook" class="nav-link">My Cookbook</a></li>
+          <li><a href="/wishlist" class="nav-link">Wishlist</a></li>
+        <% } %>
+      </ul>
+
+      <div class="nav-auth">
+        <% if (user) { %>
+          <span class="user-welcome">Hi, <strong><%= user.name %></strong>!</span>
+          <a href="/logout" class="btn btn-secondary btn-sm">Logout</a>
+        <% } else { %>
+          <a href="/login" class="nav-link">Login</a>
+          <a href="/signup" class="btn btn-primary btn-sm">Sign Up</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>

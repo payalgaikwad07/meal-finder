@@ -1,85 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meal Finder - Results</title>
-  <link rel="stylesheet" href="/styles/main.css" />
-</head>
-<body>
+<%- include('partials/header', { title: 'Search Results - YumPlan' }) %>
 
-  <header>
-    <h1>Find Your Next Meal</h1>
-    <p>Search by name, explore by cuisine, or get a surprise</p>
-    <a href="/" class="back-btn">Back to Search</a>
-  </header>
-
-  <main>
-
-    <!-- SEARCH QUERY LABEL -->
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+  <div>
+    <h1>Recipe Discoveries</h1>
     <% if (typeof query !== 'undefined' && query) { %>
-      <p class="results-label">Showing results for: <strong><%= query %></strong></p>
+      <p class="subtitle">Showing results for: <strong><%= query %></strong></p>
     <% } %>
+  </div>
+  <a href="/" class="btn btn-secondary">&larr; Back to Search</a>
+</div>
 
-    <!-- NO RESULTS MESSAGE -->
-    <% if (!meals || meals.length === 0) { %>
-      <p class="no-results">No meals found. Try a different search!</p>
+<!-- ERROR MESSAGE (shown only if error exists) -->
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="alert alert-danger" style="margin-bottom: 2rem;"><%= error %></div>
+<% } %>
 
-    <% } else { %>
+<!-- NO RESULTS MESSAGE -->
+<% if (!meals || meals.length === 0) { %>
+  <div class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h3>No recipes found</h3>
+    <p>We couldn't find any matches. Try a different search term or explore another cuisine!</p>
+    <a href="/" class="btn btn-primary">Try Another Search</a>
+  </div>
 
-      <!-- MEAL CARDS GRID -->
-      <div class="cards">
-        <% meals.forEach(function(meal) { %>
-          <div class="card">
+<% } else { %>
 
-            <!-- MEAL IMAGE from API (strMealThumb) -->
-            <img src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>" />
+  <!-- MEAL CARDS GRID -->
+  <div class="cards">
+    <% meals.forEach(function(meal) { %>
+      <% 
+        const isFav = typeof savedMealIds !== 'undefined' && savedMealIds.includes(meal.idMeal);
+      %>
+      <div class="card">
+        
+        <!-- HEART FAVORITE TOGGLE -->
+        <button 
+          class="btn-heart <%= isFav ? 'favorited' : '' %>" 
+          onclick="toggleFavorite(this, '<%= meal.idMeal %>', '<%= meal.strMeal.replace(/'/g, "\\'") %>', '<%= meal.strMealThumb %>')"
+          title="<%= isFav ? 'Remove from Cookbook' : 'Save to Cookbook' %>"
+        >
+          <%= isFav ? '♥' : '♡' %>
+        </button>
 
-            <div class="card-body">
-              <h2><%= meal.strMeal %></h2>
+        <!-- MEAL IMAGE -->
+        <img src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>" />
 
-              <!-- CATEGORY (only available on full meal detail) -->
+        <div class="card-body">
+          <div>
+            <h2><%= meal.strMeal %></h2>
+
+            <div class="card-meta">
               <% if (meal.strCategory) { %>
-                <p class="category"><%= meal.strCategory %></p>
+                <span class="category"><%= meal.strCategory %></span>
               <% } %>
 
-              <!-- CUISINE/AREA (only available on full meal detail) -->
               <% if (meal.strArea) { %>
-                <p class="area"><%= meal.strArea %></p>
+                <span class="area"><%= meal.strArea %></span>
               <% } %>
-
-              <!-- INSTRUCTIONS (only available on full meal detail) -->
-              <% if (meal.strInstructions) { %>
-                <p class="instructions"><%= meal.strInstructions.substring(0, 120) %>...</p>
-              <% } %>
-
-              <!-- YOUTUBE LINK (only available on full meal detail) -->
-              <!-- <% if (meal.strYoutube) { %>
-                <a href="<%= meal.strYoutube %>" target="_blank" class="yt-btn">▶ Watch Video</a>
-              <% } %> -->
-
-              <!-- VIEW FULL RECIPE BUTTON - works for every meal -->
-              <a href="/meal/<%= meal.idMeal %>" class="yt-btn recipe-btn">📖 View Recipe</a>
-
-              
-
-              <!-- <div class="btn-group">
-              <a href="https://www.google.com/search?q=<%= encodeURIComponent(meal.strMeal) %>+recipe" 
-                target="_blank" class="yt-btn recipe-btn">📖 Full Recipe</a>
-
-              <a href="https://www.youtube.com/results?search_query=<%= encodeURIComponent(meal.strMeal) %>+recipe" 
-                target="_blank" class="yt-btn">▶ Watch Video</a>
-            </div> -->
-
             </div>
+
+            <!-- INSTRUCTIONS EXCERPT -->
+            <% if (meal.strInstructions) { %>
+              <p class="instructions"><%= meal.strInstructions.substring(0, 110) %>...</p>
+            <% } %>
           </div>
-        <% }); %>
+
+          <!-- VIEW FULL RECIPE & WISHLIST BUTTONS -->
+          <div class="btn-group" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+            <a href="/meal/<%= meal.idMeal %>" class="btn btn-primary btn-sm btn-block">📖 View Recipe</a>
+            <button 
+              onclick="toggleWishlist(this, '<%= meal.idMeal %>', '<%= meal.strMeal.replace(/'/g, "\\'") %>', '<%= meal.strMealThumb %>')" 
+              class="btn btn-secondary btn-sm btn-block wishlist-toggle-btn <%= typeof wishlistMealIds !== 'undefined' && wishlistMealIds.includes(meal.idMeal) ? 'in-wishlist' : '' %>"
+            >
+              <%= typeof wishlistMealIds !== 'undefined' && wishlistMealIds.includes(meal.idMeal) ? '📋 In Wishlist' : '➕ Add to Wishlist' %>
+            </button>
+          </div>
+        </div>
       </div>
+    <% }); %>
+  </div>
 
-    <% } %>
+<% } %>
 
-  </main>
+<script src="/scripts/main.js"></script>
 
-  <script src="/scripts/main.js"></script>
-</body>
-</html>
+<%- include('partials/footer') %>

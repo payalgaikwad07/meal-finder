@@ -1,0 +1,54 @@
+<%- include('partials/header', { title: 'My Cookbook - YumPlan' }) %>
+
+<main class="dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <h1>My Cookbook</h1>
+      <p class="subtitle">Your handpicked collection of favorite recipes</p>
+    </div>
+    <a href="/" class="btn btn-primary">Discover More Recipes</a>
+  </div>
+
+  <div id="cookbook-grid">
+    <% if (!meals || meals.length === 0) { %>
+      <div class="empty-state">
+        <div class="empty-icon">🍳</div>
+        <h3>Your cookbook is empty</h3>
+        <p>Browse or search for meals and click the heart icon to save them here.</p>
+        <a href="/" class="btn btn-secondary">Search Recipes</a>
+      </div>
+    <% } else { %>
+      <div class="cards">
+        <% meals.forEach(function(meal) { %>
+          <% 
+            const cardId = meal.is_ai_generated ? 'custom-' + meal.id : meal.meal_id;
+            const viewUrl = meal.is_ai_generated ? `/recipe/custom/${meal.id}?source=cookbook` : `/meal/${meal.meal_id}`;
+          %>
+          <div class="card" id="fav-card-<%= cardId %>">
+            <% if (meal.is_ai_generated) { %>
+              <span class="badge" style="position: absolute; top: 12px; left: 12px; background: var(--primary); color: white; padding: 4px 10px; font-size: 0.75rem; border-radius: var(--radius-full); z-index: 5;">
+                AI Suggestion
+              </span>
+            <% } %>
+
+            <img src="<%= meal.meal_thumb || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=400&auto=format&fit=crop' %>" alt="<%= meal.meal_name %>" />
+            <div class="card-body">
+              <h2><%= meal.meal_name %></h2>
+              <div class="btn-group" style="display: flex; gap: 8px;">
+                <a href="<%= viewUrl %>" class="btn btn-primary btn-sm" style="flex: 1;">📖 View</a>
+                <button onclick="removeFavorite('<%= cardId %>')" class="btn btn-danger btn-sm fav-remove-btn" title="Remove from cookbook" style="flex: 1;">
+                  🗑️ Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</main>
+
+<!-- We will link the cookbook client scripts -->
+<script src="/scripts/main.js"></script>
+
+<%- include('partials/footer') %>

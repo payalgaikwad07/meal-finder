@@ -1,0 +1,97 @@
+<%- include('partials/header', { title: 'Weekly Meal Planner - YumPlan' }) %>
+
+<main class="dashboard-container">
+  <div class="planner-header">
+    <div>
+      <h1>Weekly Meal Planner</h1>
+      <p class="subtitle">Plan your breakfast, lunch, and dinner for the week</p>
+    </div>
+    <div class="planner-actions">
+      <a href="/planner/shopping-list?week=<%= weekStartDate %>" class="btn btn-success">
+        🛒 Generate Shopping List
+      </a>
+    </div>
+  </div>
+
+  <!-- Week Navigation Controls -->
+  <div class="week-navigation">
+    <a href="/planner?week=<%= prevWeekDate %>" class="btn btn-secondary btn-sm">&larr; Previous Week</a>
+    <span class="current-week-label">Week of <strong><%= weekStartDateFormatted %></strong></span>
+    <a href="/planner?week=<%= nextWeekDate %>" class="btn btn-secondary btn-sm">Next Week &rarr;</a>
+  </div>
+
+  <!-- Weekly Planner Grid -->
+  <div class="planner-grid">
+    <% 
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const mealTypes = ['breakfast', 'lunch', 'dinner'];
+    %>
+
+    <% days.forEach(function(day) { %>
+      <div class="planner-day-row">
+        <div class="planner-day-header">
+          <h3><%= day %></h3>
+        </div>
+
+        <div class="planner-slots">
+          <% mealTypes.forEach(function(type) { %>
+            <% 
+              // Check if a meal is planned for this day and type
+              const planned = plans.find(p => p.day_of_week === day && p.meal_type === type);
+            %>
+            <div class="planner-slot <%= type %>-slot" id="slot-<%= day %>-<%= type %>">
+              <span class="slot-label"><%= type.charAt(0).toUpperCase() + type.slice(1) %></span>
+              
+              <div class="slot-content">
+                <% if (planned) { %>
+                  <!-- Planned Meal Display -->
+                  <div class="planned-meal-card">
+                    <a href="/meal/<%= planned.meal_id %>" class="planned-meal-link"><%= planned.meal_name %></a>
+                    <button 
+                      onclick="removeFromPlan('<%= day %>', '<%= type %>', '<%= weekStartDate %>')" 
+                      class="btn-delete-slot" 
+                      title="Remove meal"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                <% } else { %>
+                  <!-- Add Meal Form (AJAX) -->
+                  <% if (savedMeals && savedMeals.length > 0) { %>
+                    <div class="add-meal-form">
+                      <select id="select-<%= day %>-<%= type %>" class="planner-select">
+                        <option value="">-- Choose Meal --</option>
+                        <% savedMeals.forEach(function(fav) { %>
+                          <option value="<%= fav.meal_id %>" data-name="<%= fav.meal_name %>">
+                            <%= fav.meal_name %>
+                          </option>
+                        <% }); %>
+                      </select>
+                      <button 
+                        onclick="addToPlan('<%= day %>', '<%= type %>', '<%= weekStartDate %>')" 
+                        class="btn-add-slot"
+                      >
+                        +
+                      </button>
+                    </div>
+                  <% } else { %>
+                    <span class="no-favs-alert">
+                      No saved meals. <a href="/">Search recipes</a>
+                    </span>
+                  <% } %>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</main>
+
+<script>
+  window.savedMeals = <%- JSON.stringify(savedMeals || []) %>;
+</script>
+<script src="/scripts/planner.js"></script>
+
+<%- include('partials/footer') %>

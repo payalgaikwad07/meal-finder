@@ -1,0 +1,62 @@
+<%- include('partials/header', { title: 'Shopping List - YumPlan' }) %>
+
+<main class="dashboard-container">
+  <div class="planner-header">
+    <div>
+      <h1>Shopping List</h1>
+      <p class="subtitle">Consolidated ingredients for the week of <strong><%= weekStartDateFormatted %></strong></p>
+    </div>
+    <a href="/planner?week=<%= weekStartDate %>" class="btn btn-secondary">
+      &larr; Back to Planner
+    </a>
+  </div>
+
+  <div class="shopping-list-card">
+    <% if (!ingredients || ingredients.length === 0) { %>
+      <div class="empty-state">
+        <div class="empty-icon">🛒</div>
+        <h3>Your shopping list is empty</h3>
+        <p>You haven't planned any meals for this week yet. Go back to the planner and add some meals!</p>
+        <a href="/planner?week=<%= weekStartDate %>" class="btn btn-primary">Plan Some Meals</a>
+      </div>
+    <% } else { %>
+      <p class="shopping-list-summary">
+        Aggregated from <%= totalMeals %> planned meal(s). Check off items as you gather them.
+      </p>
+
+      <ul class="shopping-list-items">
+        <% ingredients.forEach(function(ing, index) { %>
+          <li class="shopping-list-item">
+            <input type="checkbox" id="ing-<%= index %>" class="shopping-checkbox" />
+            <label for="ing-<%= index %>" class="shopping-label">
+              <span class="ingredient-name"><%= ing.name %></span>
+              <span class="ingredient-quantity">
+                <% ing.lines.forEach(function(line, lIdx) { %>
+                  <span class="badge"><%= line %></span><%= lIdx < ing.lines.length - 1 ? ' + ' : '' %>
+                <% }); %>
+              </span>
+            </label>
+          </li>
+        <% }); %>
+      </ul>
+
+      <div class="shopping-list-actions">
+        <button onclick="window.print()" class="btn btn-secondary btn-sm">🖨️ Print List</button>
+        <button onclick="clearCheckedItems()" class="btn btn-secondary btn-sm">🧹 Clear Checked</button>
+      </div>
+    <% } %>
+  </div>
+</main>
+
+<script>
+  function clearCheckedItems() {
+    const checkboxes = document.querySelectorAll('.shopping-checkbox');
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        cb.checked = false;
+      }
+    });
+  }
+</script>
+
+<%- include('partials/footer') %>

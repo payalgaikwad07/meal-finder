@@ -1,69 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meal Finder</title>
-  <link rel="stylesheet" href="/styles/main.css" />
-</head>
-<body>
+<%- include('partials/header', { title: 'YumPlan - Recipe & Meal Planning Assistant' }) %>
 
-  <header>
-    <h1>Find Your Next Meal</h1>
-    <p>Search by name, explore by cuisine, or get a surprise</p>
-  </header>
-
-  <main>
-
-    <!-- TAB BUTTONS -->
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('name', this)">By Name</button>
-      <button class="tab" onclick="switchTab('cuisine', this)">By Cuisine</button>
-      <button class="tab" onclick="switchTab('random', this)">Random</button>
-    </div>
-
-    <!-- TAB 1: SEARCH BY NAME -->
-    <div id="panel-name" class="panel active">
-      <form action="/search/name" method="POST">
-        <input type="text" name="mealName" placeholder="e.g. pasta, sushi, burger..." required />
-        <button type="submit">Search</button>
-      </form>
-    </div>
-
-    <!-- TAB 2: SEARCH BY CUISINE -->
-    <div id="panel-cuisine" class="panel">
-      <form action="/search/cuisine" method="POST">
-        <select name="cuisine">
-          <option value="India">Indian</option>
-          <option value="Italian">Italian</option>
-          <option value="Japanese">Japanese</option>
-          <option value="Mexican">Mexican</option>
-          <option value="British">British</option>
-          <option value="Chinese">Chinese</option>
-          <option value="French">French</option>
-          <option value="American">American</option>
-          <option value="Thai">Thai</option>
-          <option value="Greek">Greek</option>
-          <option value="Canadian">Canadian</option>
-        </select>
-        <button type="submit">Explore</button>
-      </form>
-    </div>
-
-    <!-- TAB 3: RANDOM MEAL -->
-    <div id="panel-random" class="panel">
-      <form action="/search/random" method="POST">
-        <button type="submit">Surprise Me!</button>
-      </form>
-    </div>
-
-    <!-- ERROR MESSAGE (shown only if error exists) -->
-    <% if (typeof error !== 'undefined' && error) { %>
-      <p class="error"><%= error %></p>
+<!-- Premium Hero Landing Block -->
+<header class="hero-header">
+  <h1>Your Ultimate Kitchen Companion</h1>
+  <p>Say goodbye to food waste. Discover recipes, build your personalized cookbook, manage a cooking wishlist, and find ideas using whatever is in your fridge.</p>
+  <div style="display: flex; gap: 12px; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+    <a href="#search-section" class="btn btn-primary">🔍 Explore Recipes</a>
+    <% if (user) { %>
+      <a href="/leftovers" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); color: white; border: 1.5px solid rgba(255,255,255,0.5);">🍳 What Can I Cook?</a>
+    <% } else { %>
+      <a href="/login" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); color: white; border: 1.5px solid rgba(255,255,255,0.5);">🍳 What Can I Cook? (Login to try)</a>
     <% } %>
+  </div>
+</header>
 
-  </main>
+<!-- AI PROMO SECTION -->
+<section class="ai-promo-card" style="background: linear-gradient(135deg, var(--primary-light), #fff8f0); border: 1.5px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 3rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem; box-shadow: var(--shadow);">
+  <div style="flex: 1; min-width: 280px;">
+    <span class="badge" style="background: var(--primary); color: white; margin-bottom: 0.8rem; padding: 4px 12px; font-size: 0.8rem;">NEW FEATURE</span>
+    <h2 style="color: var(--secondary); margin-bottom: 0.6rem;">Leftovers in the Fridge?</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">Enter the ingredients you have on hand and let our AI Leftover Suggester generate custom recipe ideas tailored to what you have, mixed with real matches from our database!</p>
+  </div>
+  <% if (user) { %>
+    <a href="/leftovers" class="btn btn-primary" style="align-self: center;">Try AI Leftovers Suggester</a>
+  <% } else { %>
+    <a href="/login" class="btn btn-primary" style="align-self: center;">Login to Try AI Suggester</a>
+  <% } %>
+</section>
 
-  <script src="/scripts/main.js"></script>
-</body>
-</html>
+<!-- INTERACTIVE SEARCH SECTION -->
+<div id="search-section" style="scroll-behavior: smooth; padding-top: 2rem; border-top: 2px solid var(--border); margin-bottom: 2rem;">
+  <h2 style="text-align: center; color: var(--secondary); margin-bottom: 0.4rem; font-weight: 800;">Recipe Discovery Console</h2>
+  <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Select your search strategy below to find your next favorite meal</p>
+
+  <!-- TAB BUTTONS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('name', this)">🔍 By Name</button>
+    <button class="tab" onclick="switchTab('cuisine', this)">🌍 By Cuisine</button>
+    <button class="tab" onclick="switchTab('ingredient', this)">🌽 By Ingredient</button>
+    <button class="tab" onclick="switchTab('random', this)">🎲 Random</button>
+  </div>
+
+  <!-- TAB 1: SEARCH BY NAME -->
+  <div id="panel-name" class="panel active">
+    <form action="/search/name" method="POST" class="search-form">
+      <input type="text" name="mealName" placeholder="e.g. pasta, sushi, burger..." required />
+      <button type="submit" class="btn btn-primary">Search Recipes</button>
+    </form>
+  </div>
+
+  <!-- TAB 2: SEARCH BY CUISINE -->
+  <div id="panel-cuisine" class="panel">
+    <form action="/search/cuisine" method="POST" class="search-form">
+      <select name="cuisine">
+        <option value="India">Indian</option>
+        <option value="Italian">Italian</option>
+        <option value="Japanese">Japanese</option>
+        <option value="Mexican">Mexican</option>
+        <option value="British">British</option>
+        <option value="Chinese">Chinese</option>
+        <option value="French">French</option>
+        <option value="American">American</option>
+        <option value="Thai">Thai</option>
+        <option value="Greek">Greek</option>
+        <option value="Canadian">Canadian</option>
+      </select>
+      <button type="submit" class="btn btn-primary">Explore Cuisine</button>
+    </form>
+  </div>
+
+  <!-- TAB 3: SEARCH BY INGREDIENT -->
+  <div id="panel-ingredient" class="panel">
+    <form action="/search/ingredient" method="POST" class="search-form">
+      <input type="text" name="ingredient" placeholder="e.g. chicken_breast, garlic, tomato..." required />
+      <button type="submit" class="btn btn-primary">Find by Ingredient</button>
+    </form>
+  </div>
+
+  <!-- TAB 4: RANDOM MEAL -->
+  <div id="panel-random" class="panel">
+    <form action="/search/random" method="POST" class="search-form">
+      <button type="submit" class="btn btn-primary btn-block">🎲 Surprise Me with a Random Recipe!</button>
+    </form>
+  </div>
+</div>
+
+<!-- ERROR MESSAGE (shown only if error exists) -->
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
+<!-- RECENT SEARCHES (shown only for logged-in users) -->
+<% if (user && typeof recentSearches !== 'undefined' && recentSearches && recentSearches.length > 0) { %>
+  <div class="recent-searches-section">
+    <h3>🕒 Your Recent Searches</h3>
+    <div class="search-pills">
+      <% recentSearches.forEach(function(search) { %>
+        <% 
+          let endpoint = "/search/name";
+          let fieldName = "mealName";
+          let icon = "🔍";
+          if (search.search_type === 'cuisine') {
+            endpoint = "/search/cuisine";
+            fieldName = "cuisine";
+            icon = "🌍";
+          } else if (search.search_type === 'ingredient') {
+            endpoint = "/search/ingredient";
+            fieldName = "ingredient";
+            icon = "🌽";
+          } else if (search.search_type === 'random') {
+            endpoint = "/search/random";
+            icon = "🎲";
+          }
+        %>
+        <form action="<%= endpoint %>" method="POST" style="display: inline;">
+          <% if (search.search_type !== 'random') { %>
+            <input type="hidden" name="<%= fieldName %>" value="<%= search.query_text %>" />
+          <% } %>
+          <button type="submit" class="btn btn-secondary btn-sm search-pill">
+            <%= icon %> <%= search.query_text %>
+          </button>
+        </form>
+      <% }); %>
+    </div>
+  </div>
+<% } %>
+
+<script src="/scripts/main.js"></script>
+
+<%- include('partials/footer') %>

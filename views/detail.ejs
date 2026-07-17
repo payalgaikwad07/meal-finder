@@ -1,53 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title><%= meal.strMeal %></title>
-  <link rel="stylesheet" href="/styles/main.css" />
-</head>
-<body>
+<%- include('partials/header', { title: meal.strMeal + ' - YumPlan' }) %>
 
-  <header>
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+  <div>
     <h1><%= meal.strMeal %></h1>
-    <p><%= meal.strArea %> • <%= meal.strCategory %></p>
-    <a href="/" class="back-btn">Back to Search</a>
-  </header>
+    <p class="subtitle"><%= meal.strArea %> Cuisine &bull; <%= meal.strCategory %></p>
+  </div>
+  <a href="/" class="btn btn-secondary">&larr; Back to Search</a>
+</div>
 
-  <main>
-    <div class="detail-container">
-      
-      <!-- IMAGE -->
+<main class="detail-container">
+  <div class="detail-row">
+    
+    <!-- LEFT SIDE: IMAGE & METADATA -->
+    <div class="detail-img-container">
+      <% 
+        const isFav = typeof savedMealIds !== 'undefined' && savedMealIds.includes(meal.idMeal);
+      %>
+      <!-- HEART FAVORITE TOGGLE -->
+      <button 
+        class="btn-heart <%= isFav ? 'favorited' : '' %>" 
+        style="width: 48px; height: 48px; font-size: 1.4rem;"
+        onclick="toggleFavorite(this, '<%= meal.idMeal %>', '<%= meal.strMeal.replace(/'/g, "\\'") %>', '<%= meal.strMealThumb %>')"
+        title="<%= isFav ? 'Remove from Cookbook' : 'Save to Cookbook' %>"
+      >
+        <%= isFav ? '♥' : '♡' %>
+      </button>
+
       <img src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>" class="detail-img" />
+      
+      <div style="margin-top: 1.5rem; display: flex; gap: 10px; flex-wrap: wrap;">
+        <span class="category" style="font-size: 0.9rem; padding: 6px 14px;"><%= meal.strCategory %></span>
+        <span class="area" style="font-size: 0.9rem; padding: 6px 14px;"><%= meal.strArea %></span>
+      </div>
 
-      <!-- TAGS -->
-      <p class="category"><%= meal.strCategory %></p>
-      <p class="area"><%= meal.strArea %></p>
+      <button 
+        onclick="toggleWishlist(this, '<%= meal.idMeal %>', '<%= meal.strMeal.replace(/'/g, "\\'") %>', '<%= meal.strMealThumb %>')" 
+        class="btn btn-secondary btn-block wishlist-toggle-btn <%= typeof wishlistMealIds !== 'undefined' && wishlistMealIds.includes(meal.idMeal) ? 'in-wishlist' : '' %>"
+        style="margin-top: 1.5rem; gap: 8px;"
+      >
+        <%= typeof wishlistMealIds !== 'undefined' && wishlistMealIds.includes(meal.idMeal) ? '📋 In Wishlist' : '➕ Add to Wishlist' %>
+      </button>
 
-      <!-- INGREDIENTS -->
-    <h2>Ingredients</h2>
-    <ul class="ingredients-list">
-    <% for(let i = 1; i <= 20; i++) { %>
-        <% if(meal['strIngredient' + i]) { %>
-        <li>
-            <img src="https://www.themealdb.com/images/ingredients/<%= meal['strIngredient' + i] %>-Small.png" 
-                alt="<%= meal['strIngredient' + i] %>" />
-            <%= meal['strMeasure' + i] %> <%= meal['strIngredient' + i] %>
-        </li>
-        <% } %>
-    <% } %>
-    </ul>
-
-      <!-- INSTRUCTIONS -->
-      <h2>Instructions</h2>
-      <p class="detail-instructions"><%= meal.strInstructions %></p>
-
-      <!-- YOUTUBE -->
       <% if (meal.strYoutube) { %>
-        <a href="<%= meal.strYoutube %>" target="_blank" class="yt-btn">▶ Watch Video</a>
+        <a href="<%= meal.strYoutube %>" target="_blank" class="btn btn-danger btn-block" style="margin-top: 1rem; gap: 8px;">
+          ▶ Watch Cooking Video
+        </a>
       <% } %>
-
     </div>
-  </main>
 
-</body>
-</html>
+    <!-- RIGHT SIDE: INGREDIENTS -->
+    <div class="detail-info">
+      <h2>Ingredients</h2>
+      <ul class="ingredients-list">
+        <% for(let i = 1; i <= 20; i++) { %>
+          <% if(meal['strIngredient' + i] && meal['strIngredient' + i].trim()) { %>
+            <li>
+              <img src="https://www.themealdb.com/images/ingredients/<%= meal['strIngredient' + i] %>-Small.png" 
+                   alt="<%= meal['strIngredient' + i] %>" 
+                   onerror="this.style.display='none';" />
+              <span>
+                <strong><%= meal['strMeasure' + i] %></strong> <%= meal['strIngredient' + i] %>
+              </span>
+            </li>
+          <% } %>
+        <% } %>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- INSTRUCTIONS (FULL WIDTH BELOW) -->
+  <div class="instructions-section" style="margin-top: 2rem; border-top: 2px solid var(--border); padding-top: 1.5rem;">
+    <h2 style="margin-bottom: 1rem; color: var(--secondary);">Cooking Instructions</h2>
+    <p class="detail-instructions"><%= meal.strInstructions %></p>
+  </div>
+</main>
+
+<script src="/scripts/main.js"></script>
+
+<%- include('partials/footer') %>
