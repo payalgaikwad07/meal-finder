@@ -1,119 +1,146 @@
-# YumPlan 🍽️ - Full-Stack Recipe & Meal Planning Application
+# 🍳 YumPlan - Meal Finder, Weekly Planner & AI Chef
 
-YumPlan is a full-stack recipe discovery and meal-planning web application built with Node.js (Express), EJS, and PostgreSQL. It integrates with [TheMealDB](https://www.themealdb.com/api.php) API and the Google Gemini API to let users search for recipes by name, cuisine, or ingredient, save favorites to a personal cookbook, build a simple "cook this" wishlist with automatic shopping-list generation, and get AI-powered recipe suggestions based on leftover ingredients.
-
-
-## Features
-
-1. **Recipe Search** — search by name, cuisine, or main ingredient, plus a "surprise me" random recipe option. Powered by TheMealDB.
-2. **Authentication** — signup/login via Passport.js (local strategy), with `bcrypt` password hashing and PostgreSQL-backed sessions (`connect-pg-simple`). Rate-limited signup/login endpoints (`express-rate-limit`) to prevent brute-force attempts.
-3. **My Cookbook** — save favorite recipes to a personal collection, with instant AJAX add/remove (no page reload).
-4. **My Wishlist** — a simple, date-free list of recipes a user currently wants to cook. Add/remove freely from search results or recipe detail pages.
-5. **Shopping List Generator** — pulls every recipe currently in the wishlist, fetches full ingredient lists, and produces one consolidated, de-duplicated shopping list (see aggregation logic below).
-6. **AI Leftovers Suggester** *("What Can I Cook?", available to logged-in users)* — users enter 2-5 ingredients they have on hand. The app:
-   - Queries TheMealDB for real recipes matching each ingredient, then ranks results by how many of the user's ingredients each recipe actually uses.
-   - Calls the Gemini API to generate 2-3 original recipe ideas for cases with no strong database match.
-   - Lets users save either a real match or an AI-generated idea directly to their cookbook (AI recipes are stored with an `is_ai_generated` flag and their full details in a `JSONB` column, since they have no MealDB ID).
-7. **Search History** — recent searches are logged per user and shown as clickable pills on the homepage for quick re-search.
-8. **Error Handling** — distinct states for "no results found" vs. "API/database error," custom 404 and error pages that don't leak stack traces.
+An intelligent, full-stack recipe discovery, weekly meal planning, and grocery list application powered by **React**, **Express REST API**, **PostgreSQL**, **TheMealDB API**, and **Google Gemini AI**.
 
 ---
 
-## Technical Decisions & Architecture
+## 🏗️ Project Architecture
 
-### 1. Persistent Session Storage: PostgreSQL vs. Memory
-Express defaults to `MemoryStore` for sessions, which loses all sessions on every server restart and can't scale across multiple instances. YumPlan uses `connect-pg-simple` to store session state in a PostgreSQL `session` table instead, so sessions survive redeploys and would work correctly behind a load balancer with multiple app instances.
+The project is cleanly decoupled into two dedicated folders:
 
-### 2. Shopping List Aggregation Logic
-Turning several recipes' worth of ingredients into one usable shopping list means parsing unstructured measurement strings (`1 1/2 cups`, `500g`, `to taste`, `½ tsp`). The logic lives in `utils/aggregator.js`:
-- **Fraction & Unicode normalization** — unicode fractions (½, ¼, ¾) and mixed fractions (`1 1/2`) are converted to decimals.
-- **Non-numeric quantities** (`to taste`, `pinch`, `for serving`) are preserved as descriptive text rather than forced into a number.
-- **Unit standardization** — units are lowercased and singularized (`cloves` → `clove`, `cups` → `cup`).
-- **Consolidation** — matching units for the same ingredient are summed (`1 cup Milk` + `0.5 cup Milk` → `1.5 cup Milk`). Mismatched units (`2 clove Garlic` vs `50g Garlic`) are **not** guess-converted — they're kept as separate line items under the same ingredient, since guessing volume/mass/count conversions risks an incorrect grocery list.
-
-### 3. AI Recipe Matching & Fallback
-For the leftovers suggester, real-recipe matching (via TheMealDB) is tried first and ranked by ingredient overlap, so users see legitimate recipes before AI-generated ones. Gemini is only used to fill gaps where no good real match exists, and its output is parsed into a consistent structure (name, description, steps) so it can be displayed and saved the same way as a real recipe.
-
-### 4. Render Deployment Readiness
-`db/index.js` checks for a single `DATABASE_URL` connection string (which Render and similar platforms inject automatically) and falls back to individual `DB_*` variables for local development. SSL is dynamically enabled in production to support managed Postgres providers that require it.
+```
+meal-finder/
+├── backend/                  # Node.js & Express REST API
+│   ├── db/                   # Database connection & schema scripts
+│   ├── models/               # Data access layers (Users, Favorites, Wishlist, Planner, History)
+│   ├── middleware/           # JWT & Session auth middlewares
+│   ├── utils/                # Smart ingredient aggregator & Gemini AI integration
+│   ├── index.js              # Express REST server with CORS & rate limiting
+│   ├── package.json
+│   └── .env.example
+│
+├── frontend/                 # Modern React + Vite Single-Page Application
+│   ├── src/
+│   │   ├── api/              # Axios API client with automatic JWT token attachment
+│   │   ├── context/          # User authentication context
+│   │   ├── components/       # Navbar, Footer, MealCard, PlannerModal, Toast
+│   │   ├── pages/            # Home, SearchResults, RecipeDetail, CustomRecipeDetail,
+│   │   │                     # Cookbook, Wishlist, Planner, ShoppingList, Leftovers, Auth
+│   │   ├── App.jsx           # Client-side routing
+│   │   ├── main.jsx
+│   │   └── index.css         # Modern culinary aesthetic styling
+│   ├── index.html
+│   ├── vite.config.js        # Local API proxying
+│   ├── vercel.json           # SPA rewrites for Vercel deployment
+│   ├── package.json
+│   └── .env.example
+│
+├── package.json              # Root scripts
+└── README.md
+```
 
 ---
 
-## Database Schema
+## ✨ Features
 
-```
-+-----------------------------------+
-|               users               |
-+-----------------------------------+
-| id (PK)                           |
-| name                              |
-| email (UNIQUE)                    |
-| password_hash                     |
-| created_at                        |
-+-----------------+-----------------+
-                  |
-   +--------------+-------------------+--------------------+
-   |                                  |                    |
-   v                                  v                    v
-+------------------------+  +------------------------+  +-----------------------+
-|      saved_meals       |  |        wishlist        |  |    search_history     |
-+------------------------+  +------------------------+  +-----------------------+
-| id (PK)                |  | id (PK)                |  | id (PK)               |
-| user_id (FK -> users)  |  | user_id (FK -> users)  |  | user_id (FK -> users) |
-| meal_id (nullable)     |  | meal_id (nullable)     |  | query_text            |
-| meal_name               |  | meal_name               |  | search_type           |
-| meal_thumb               |  | meal_thumb               |  | searched_at           |
-| is_ai_generated         |  | is_ai_generated         |  +-----------------------+
-| recipe_details (JSONB)  |  | recipe_details (JSONB)  |
-| saved_at                 |  | added_at                 |
-| [unique: user+meal_id   |  | [unique: user+meal_id   |
-|  where meal_id is set]  |  |  where meal_id is set]  |
-+------------------------+  +------------------------+
-```
-
-- **users** — stores hashed credentials.
-- **saved_meals** — "My Cookbook." `meal_id` is nullable and `recipe_details`/`is_ai_generated` support saving AI-generated recipes that have no MealDB ID.
-- **wishlist** — "Cook This" list. Same nullable-ID/AI-support pattern as `saved_meals`. Replaces an earlier day-of-week/meal-type weekly planner design, which was dropped in favor of a simpler, date-free list.
-- **search_history** — logs name/cuisine/ingredient/random searches with timestamps.
-- **session** — managed automatically by `connect-pg-simple`.
-
-The base schema is in [`db/schema.sql`](db/schema.sql); [`db/migrate.js`](db/migrate.js) contains the migration that moved the app from the old weekly-planner model to the current wishlist model and added AI-recipe support.
+- **🔍 Global Recipe Search**: Search by Recipe Name, Cuisine/Country, or Main Ingredient with instant results.
+- **🎲 Surprise Me**: One-click random recipe generator.
+- **🤖 AI Leftovers Assistant**: Enter 2 to 6 leftover ingredients from your fridge to get custom recipe ideas created by Google Gemini AI and match real database recipes.
+- **📅 Interactive Weekly Planner**: Schedule breakfast, lunch, and dinner for Monday through Sunday.
+- **🛒 Smart Shopping List**: Aggregates ingredients across your planned meals or wishlist, consolidating units and quantities.
+- **📖 Personal Cookbook & Wishlist**: Save favorite recipes and bookmark dishes to cook later.
+- **🔐 Secure Authentication**: JWT token & session support with bcrypt password hashing.
 
 ---
 
-## Setup & Running Instructions
+## 🚀 Local Development Setup
 
-### 1. Create the database
-```sql
-CREATE DATABASE meal_planner;
-```
-Run [`db/schema.sql`](db/schema.sql) against it, then run the migration:
+### 1. Prerequisites
+- Node.js (v18+)
+- PostgreSQL installed locally or a cloud database URL (e.g. Supabase, Neon, Railway)
+
+### 2. Install Dependencies
+From the repository root:
 ```bash
-node db/migrate.js
+npm run install:all
 ```
+*(Or navigate into `backend/` and run `npm install`, then into `frontend/` and run `npm install`)*
 
-### 2. Configure environment variables
-Create a `.env` file in the project root:
+### 3. Configure Backend Environment
+Copy `backend/.env.example` to `backend/.env`:
 ```env
-PORT=3000
-DB_USER=postgres
-DB_PASSWORD=your_password_here
-DB_HOST=localhost
-DB_PORT=5432
-DB_DATABASE=meal_planner
-SESSION_SECRET=some_long_random_session_secret_key_here
+PORT=5000
+DATABASE_URL=postgresql://postgres:your_password@localhost:5432/meal_finder
+JWT_SECRET=your_jwt_secret_key_here
+CLIENT_URL=http://localhost:5173
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
-In production (e.g. Render), set `DATABASE_URL` instead of the individual `DB_*` variables — it takes priority automatically.
 
-### 3. Install dependencies
+### 4. Initialize Database Tables
 ```bash
-npm install
+cd backend
+npm run migrate
 ```
 
-### 4. Run the app
+### 5. Run Backend & Frontend Locally
+Open two terminal windows:
+
+**Terminal 1 (Backend):**
 ```bash
-npm run dev    # development, auto-restart
-npm start      # production
+npm run backend
+# Starts REST API on http://localhost:5000
 ```
-Visit `http://localhost:3000`.
+
+**Terminal 2 (Frontend):**
+```bash
+npm run frontend
+# Starts React Vite dev server on http://localhost:5173
+```
+
+---
+
+## 🌐 Deployment Guide
+
+### Deploying Frontend to Vercel
+
+1. Push your changes to your GitHub repository:
+   ```bash
+   git add .
+   git commit -m "Restructure into React frontend and Express backend"
+   git push origin main
+   ```
+2. Go to your [Vercel Dashboard](https://vercel.com) and click **Add New Project**.
+3. Import your `meal-finder` repository.
+4. In the configuration:
+   - **Root Directory**: Select `frontend`
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+5. Under **Environment Variables**, add:
+   - `VITE_API_URL`: Your deployed backend URL (e.g. `https://your-meal-backend.onrender.com`)
+6. Click **Deploy**. Vercel will automatically build and deploy your React app with full SPA routing (`vercel.json`).
+
+---
+
+### Deploying Backend to Render / Railway
+
+1. Go to [Render](https://render.com) or [Railway](https://railway.app).
+2. Create a new **Web Service** and link your GitHub repository.
+3. Configure the service settings:
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+4. In **Environment Variables**, set:
+   - `NODE_ENV`: `production`
+   - `PORT`: `5000` (or leave default for provider)
+   - `DATABASE_URL`: Your production PostgreSQL connection string (from Supabase, Neon, or Render PostgreSQL)
+   - `JWT_SECRET`: A secure random secret string
+   - `CLIENT_URL`: Your deployed Vercel frontend URL (e.g. `https://your-app.vercel.app`)
+   - `GEMINI_API_KEY`: Your Google Gemini API key
+5. Deploy the backend and copy its live URL (e.g., `https://your-api.onrender.com`).
+6. Update `VITE_API_URL` on Vercel to point to this live backend URL.
+
+---
+
+## 📄 License
+ISC License &copy; Payal Gaikwad
