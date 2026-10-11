@@ -39,8 +39,48 @@ const Home = () => {
   const [nameInput, setNameInput] = useState('');
   const [cuisineInput, setCuisineInput] = useState('Indian');
   const [ingredientInput, setIngredientInput] = useState('');
+  const [nameSuggestion, setNameSuggestion] = useState(null);
+  const [ingredientSuggestion, setIngredientSuggestion] = useState(null);
   const [history, setHistory] = useState([]);
   const [randomLoading, setRandomLoading] = useState(false);
+
+  useEffect(() => {
+    if (!nameInput.trim() || nameInput.trim().length < 3) {
+      setNameSuggestion(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      api.get(`/search/suggest?q=${encodeURIComponent(nameInput.trim())}`)
+        .then((res) => {
+          if (res.data?.suggestion) {
+            setNameSuggestion(res.data.suggestion);
+          } else {
+            setNameSuggestion(null);
+          }
+        })
+        .catch(() => setNameSuggestion(null));
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [nameInput]);
+
+  useEffect(() => {
+    if (!ingredientInput.trim() || ingredientInput.trim().length < 3) {
+      setIngredientSuggestion(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      api.get(`/search/suggest?q=${encodeURIComponent(ingredientInput.trim())}`)
+        .then((res) => {
+          if (res.data?.suggestion) {
+            setIngredientSuggestion(res.data.suggestion);
+          } else {
+            setIngredientSuggestion(null);
+          }
+        })
+        .catch(() => setIngredientSuggestion(null));
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [ingredientInput]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -104,7 +144,7 @@ const Home = () => {
         <div className="container">
           <h1>Your Ultimate Kitchen Companion</h1>
           <p>
-            Say goodbye to food waste. Discover recipes, build your personalized cookbook, manage a cooking wishlist, and find ideas using whatever is in your fridge.
+            Say goodbye to food waste. Discover recipes, save your favorite meals to your wishlist, generate grocery lists, and find ideas using whatever is in your fridge.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
             <a href="#search-section" className="btn btn-primary">
@@ -235,20 +275,46 @@ const Home = () => {
 
             {/* TAB 1: Search by Name */}
             {searchTab === 'name' && (
-              <form onSubmit={handleNameSearch} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  placeholder="e.g. pasta, sushi, burger, chicken..."
-                  className="form-input"
-                  style={{ flex: '1 1 260px' }}
-                  required
-                />
-                <button type="submit" className="btn btn-primary" style={{ flexShrink: 0 }}>
-                  Search Recipes
-                </button>
-              </form>
+              <div>
+                <form onSubmit={handleNameSearch} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    placeholder="e.g. pasta, sushi, burger, chicken..."
+                    className="form-input"
+                    style={{ flex: '1 1 260px' }}
+                    required
+                  />
+                  <button type="submit" className="btn btn-primary" style={{ flexShrink: 0 }}>
+                    Search Recipes
+                  </button>
+                </form>
+                {nameSuggestion && (
+                  <div style={{ marginTop: '10px', fontSize: '0.88rem', color: '#92400e', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>💡 Did you mean:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNameInput(nameSuggestion);
+                        setNameSuggestion(null);
+                      }}
+                      style={{
+                        background: '#fef3c7',
+                        border: '1px solid #fde68a',
+                        padding: '3px 10px',
+                        borderRadius: '12px',
+                        fontWeight: 700,
+                        color: 'var(--primary)',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      {nameSuggestion}
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* TAB 2: Search by Cuisine */}
@@ -272,20 +338,46 @@ const Home = () => {
 
             {/* TAB 3: Search by Ingredient */}
             {searchTab === 'ingredient' && (
-              <form onSubmit={handleIngredientSearch} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <input
-                  type="text"
-                  value={ingredientInput}
-                  onChange={(e) => setIngredientInput(e.target.value)}
-                  placeholder="e.g. chicken_breast, garlic, tomato..."
-                  className="form-input"
-                  style={{ flex: '1 1 260px' }}
-                  required
-                />
-                <button type="submit" className="btn btn-primary" style={{ flexShrink: 0 }}>
-                  Find by Ingredient
-                </button>
-              </form>
+              <div>
+                <form onSubmit={handleIngredientSearch} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <input
+                    type="text"
+                    value={ingredientInput}
+                    onChange={(e) => setIngredientInput(e.target.value)}
+                    placeholder="e.g. chicken_breast, garlic, tomato..."
+                    className="form-input"
+                    style={{ flex: '1 1 260px' }}
+                    required
+                  />
+                  <button type="submit" className="btn btn-primary" style={{ flexShrink: 0 }}>
+                    Find by Ingredient
+                  </button>
+                </form>
+                {ingredientSuggestion && (
+                  <div style={{ marginTop: '10px', fontSize: '0.88rem', color: '#92400e', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>💡 Did you mean:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIngredientInput(ingredientSuggestion);
+                        setIngredientSuggestion(null);
+                      }}
+                      style={{
+                        background: '#fef3c7',
+                        border: '1px solid #fde68a',
+                        padding: '3px 10px',
+                        borderRadius: '12px',
+                        fontWeight: 700,
+                        color: 'var(--primary)',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      {ingredientSuggestion}
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* TAB 4: Random Meal */}

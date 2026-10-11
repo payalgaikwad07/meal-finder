@@ -13,6 +13,16 @@ import db from "../db/index.js";
  */
 export async function saveMeal(userId, mealId, mealName, mealThumb, isAiGenerated = false, recipeDetails = null) {
   if (!mealId) {
+    const checkQuery = `
+      SELECT * FROM saved_meals 
+      WHERE user_id = $1 AND is_ai_generated = TRUE AND meal_name = $2
+      LIMIT 1;
+    `;
+    const existing = await db.query(checkQuery, [userId, mealName]);
+    if (existing.rows.length > 0) {
+      return existing.rows[0];
+    }
+
     const queryTextAI = `
       INSERT INTO saved_meals (user_id, meal_id, meal_name, meal_thumb, is_ai_generated, recipe_details)
       VALUES ($1, NULL, $2, $3, $4, $5)

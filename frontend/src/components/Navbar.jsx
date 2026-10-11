@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { 
-  UtensilsCrossed, 
-  Bookmark, 
-  BookHeart, 
-  Sparkles, 
-  LogIn, 
-  UserPlus, 
-  LogOut, 
-  Menu, 
-  X
+import {
+  UtensilsCrossed,
+  BookHeart,
+  ShoppingBag,
+  Sparkles,
+  LogIn,
+  UserPlus,
+  LogOut,
+  Menu,
+  X,
+  Bookmark,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
@@ -20,6 +22,21 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    if (userDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userDropdownOpen]);
 
   const handleLogout = () => {
     logout();
@@ -55,13 +72,13 @@ const Navbar = () => {
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/cookbook" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                  <span>My Cookbook</span>
+                <NavLink to="/wishlist" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <span>Wishlist</span>
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/wishlist" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                  <span>Wishlist & Groceries</span>
+                <NavLink to="/shopping-list" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <span>Grocery List</span>
                 </NavLink>
               </li>
             </ul>
@@ -70,24 +87,27 @@ const Navbar = () => {
           {/* User Auth Controls */}
           <div className="nav-user-actions">
             {isAuthenticated ? (
-              <div style={{ position: 'relative' }}>
+              <div ref={dropdownRef} style={{ position: 'relative' }}>
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: '6px',
                     padding: '6px 14px',
                     background: 'var(--secondary-light)',
                     border: '1px solid var(--border)',
                     borderRadius: '20px',
                     color: 'var(--secondary)',
                     fontSize: '0.88rem',
-                    fontWeight: 600
+                    fontWeight: 600,
+                    cursor: 'pointer'
                   }}
+                  aria-label="User menu"
                 >
                   <span style={{ color: 'var(--text-muted)' }}>Hi,</span>
                   <span style={{ color: 'var(--secondary)', fontWeight: 700 }}>{user?.name?.split(' ')[0] || 'User'}!</span>
+                  <ChevronDown size={14} style={{ color: 'var(--text-muted)', transition: 'transform 0.2s', transform: userDropdownOpen ? 'rotate(180deg)' : 'none' }} />
                 </button>
 
                 {userDropdownOpen && (
@@ -112,21 +132,6 @@ const Navbar = () => {
                       </div>
                     </div>
                     <Link
-                      to="/cookbook"
-                      onClick={() => setUserDropdownOpen(false)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px 12px',
-                        color: 'var(--secondary)',
-                        fontSize: '0.88rem',
-                        borderRadius: '6px'
-                      }}
-                    >
-                      <BookHeart size={16} /> My Cookbook
-                    </Link>
-                    <Link
                       to="/wishlist"
                       onClick={() => setUserDropdownOpen(false)}
                       style={{
@@ -139,7 +144,22 @@ const Navbar = () => {
                         borderRadius: '6px'
                       }}
                     >
-                      <Bookmark size={16} /> My Wishlist
+                      <Bookmark size={16} /> Wishlist
+                    </Link>
+                    <Link
+                      to="/shopping-list"
+                      onClick={() => setUserDropdownOpen(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 12px',
+                        color: 'var(--secondary)',
+                        fontSize: '0.88rem',
+                        borderRadius: '6px'
+                      }}
+                    >
+                      <ShoppingBag size={16} /> Grocery List
                     </Link>
                     <button
                       onClick={handleLogout}
@@ -153,7 +173,9 @@ const Navbar = () => {
                         background: 'transparent',
                         fontSize: '0.88rem',
                         borderRadius: '6px',
-                        textAlign: 'left'
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        border: 'none'
                       }}
                     >
                       <LogOut size={16} /> Logout
@@ -177,7 +199,7 @@ const Navbar = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="btn btn-secondary btn-icon"
               style={{ display: 'none' }}
-              aria-label="Toggle menu"
+              aria-label="Toggle navigation menu"
               id="mobile-nav-toggle"
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -233,22 +255,22 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink
-                to="/cookbook"
-                onClick={() => setMobileMenuOpen(false)}
-                className="nav-link"
-                style={{ padding: '8px 12px' }}
-              >
-                My Cookbook
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
                 to="/wishlist"
                 onClick={() => setMobileMenuOpen(false)}
                 className="nav-link"
                 style={{ padding: '8px 12px' }}
               >
-                Wishlist & Groceries
+                Wishlist
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/shopping-list"
+                onClick={() => setMobileMenuOpen(false)}
+                className="nav-link"
+                style={{ padding: '8px 12px' }}
+              >
+                Grocery List
               </NavLink>
             </li>
           </ul>

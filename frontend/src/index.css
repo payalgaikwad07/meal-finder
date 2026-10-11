@@ -371,8 +371,8 @@ button {
   box-shadow: var(--shadow);
 }
 
-/* Recipe Grid */
-.recipe-grid {
+/* Recipe Grid & Meal Grid */
+.recipe-grid, .meal-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 1.5rem;

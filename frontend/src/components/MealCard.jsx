@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Bookmark, Eye, Sparkles, ChefHat } from 'lucide-react';
+import { Bookmark, Eye, Sparkles, ChefHat } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -8,9 +8,7 @@ import { useToast } from './Toast';
 
 const MealCard = ({ 
   meal, 
-  initialFavorite = false, 
   initialWishlist = false,
-  onRemoveFavorite,
   onRemoveWishlist,
   isCustom = false
 }) => {
@@ -21,57 +19,10 @@ const MealCard = ({
   const mealName = meal.strMeal || meal.meal_name || 'Delicious Recipe';
   const mealThumb = meal.strMealThumb || meal.meal_thumb || '';
   const mealCategory = meal.strCategory || (isCustom ? 'AI Chef' : null);
-  const mealArea = meal.strArea || null;
   const matchesCount = meal.matchesCount;
 
-  const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isWishlist, setIsWishlist] = useState(initialWishlist);
-  const [favLoading, setFavLoading] = useState(false);
   const [wishLoading, setWishLoading] = useState(false);
-
-  const toggleFavorite = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!isAuthenticated) {
-      showToast('Please log in to save recipes to your cookbook', 'info');
-      return;
-    }
-
-    setFavLoading(true);
-    try {
-      if (isFavorite) {
-        if (isCustom) {
-          await api.delete(`/favorites/custom/${meal.id}`);
-        } else {
-          await api.delete(`/favorites/${mealId}`);
-        }
-        setIsFavorite(false);
-        showToast(`Removed "${mealName}" from Cookbook`, 'info');
-        if (onRemoveFavorite) onRemoveFavorite(mealId || meal.id);
-      } else {
-        if (isCustom) {
-          await api.post('/favorites/ai', {
-            meal_name: mealName,
-            recipe_details: meal.recipe_details
-          });
-        } else {
-          await api.post('/favorites', {
-            meal_id: mealId,
-            meal_name: mealName,
-            meal_thumb: mealThumb
-          });
-        }
-        setIsFavorite(true);
-        confetti({ particleCount: 35, spread: 60, origin: { y: 0.85 } });
-        showToast(`Saved "${mealName}" to Cookbook! ❤️`);
-      }
-    } catch (err) {
-      showToast('Action failed. Please try again.', 'error');
-    } finally {
-      setFavLoading(false);
-    }
-  };
 
   const toggleWishlist = async (e) => {
     e.preventDefault();
@@ -98,9 +49,10 @@ const MealCard = ({
           recipe_details: meal.recipe_details || null
         });
         setIsWishlist(true);
+        confetti({ particleCount: 30, spread: 50, origin: { y: 0.85 } });
         showToast(`Added "${mealName}" to Wishlist! 🔖`);
       }
-    } catch (err) {
+    } catch {
       showToast('Action failed. Please try again.', 'error');
     } finally {
       setWishLoading(false);
@@ -161,28 +113,6 @@ const MealCard = ({
             <ChefHat size={44} />
           </div>
         )}
-
-        {/* Favorite Heart Button */}
-        <button
-          onClick={toggleFavorite}
-          disabled={favLoading}
-          className="btn-icon"
-          title={isFavorite ? "In Favorites" : "Add to Favorites"}
-          style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: '#ffffff',
-            border: '1px solid rgba(0,0,0,0.06)',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-            color: isFavorite ? '#ef4444' : '#718096',
-            zIndex: 2,
-            transition: 'transform 0.2s ease',
-            cursor: 'pointer'
-          }}
-        >
-          <Heart size={16} fill={isFavorite ? '#ef4444' : 'none'} color={isFavorite ? '#ef4444' : '#718096'} />
-        </button>
       </div>
 
       {/* Card Content */}
@@ -232,6 +162,7 @@ const MealCard = ({
             to={detailUrl}
             className="btn btn-primary btn-sm"
             style={{ width: '100%', fontWeight: 700 }}
+            aria-label={`View recipe for ${mealName}`}
           >
             <Eye size={15} />
             <span>View Recipe</span>
@@ -241,6 +172,7 @@ const MealCard = ({
             onClick={toggleWishlist}
             disabled={wishLoading}
             className="btn btn-secondary btn-sm"
+            aria-label={isWishlist ? `Remove ${mealName} from Wishlist` : `Add ${mealName} to Wishlist`}
             style={{
               width: '100%',
               fontSize: '0.85rem',

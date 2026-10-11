@@ -31,17 +31,23 @@ const Leftovers = () => {
   const [error, setError] = useState(null);
 
   const addIngredient = (ing) => {
-    const trimmed = ing.trim();
-    if (!trimmed) return;
-    if (ingredients.map(i => i.toLowerCase()).includes(trimmed.toLowerCase())) {
-      showToast(`"${trimmed}" is already in your list`, 'info');
-      return;
+    if (!ing) return;
+    const parts = ing.split(/,|(?:\band\b)|\n/i).map(p => p.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+
+    let updated = [...ingredients];
+    for (const part of parts) {
+      if (updated.length >= 6) {
+        showToast('Maximum 6 ingredients at a time', 'info');
+        break;
+      }
+      if (updated.map(i => i.toLowerCase()).includes(part.toLowerCase())) {
+        showToast(`"${part}" is already in your list`, 'info');
+      } else {
+        updated.push(part);
+      }
     }
-    if (ingredients.length >= 6) {
-      showToast('Maximum 6 ingredients at a time', 'info');
-      return;
-    }
-    setIngredients((prev) => [...prev, trimmed]);
+    setIngredients(updated);
     setInputVal('');
   };
 
@@ -95,24 +101,6 @@ const Leftovers = () => {
         recipe_details: aiRecipe
       });
       showToast(`Saved "${aiRecipe.name}" to Wishlist! 🔖`);
-    } catch {
-      showToast('Failed to save recipe', 'error');
-    }
-  };
-
-  const handleSaveAiToCookbook = async (aiRecipe) => {
-    if (!isAuthenticated) {
-      showToast('Please log in to save recipes to your cookbook', 'info');
-      return;
-    }
-
-    try {
-      await api.post('/favorites/ai', {
-        meal_name: aiRecipe.name,
-        recipe_details: aiRecipe
-      });
-      showToast(`Saved "${aiRecipe.name}" to Cookbook! ❤️`);
-      confetti({ particleCount: 30, spread: 50 });
     } catch {
       showToast('Failed to save recipe', 'error');
     }
@@ -282,36 +270,7 @@ const Leftovers = () => {
       {/* Results Display */}
       {results && (
         <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
-          {/* Section 1: Real Recipe Database Matches */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.8rem' }}>
-              <span style={{ fontSize: '1.4rem' }}>🍳</span>
-              <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--secondary)' }}>
-                Real Recipe Database Matches
-              </h2>
-            </div>
-
-            {results.realMatches && results.realMatches.length > 0 ? (
-              <div className="recipe-grid">
-                {results.realMatches.map((meal) => (
-                  <MealCard
-                    key={meal.idMeal}
-                    meal={meal}
-                    initialFavorite={results.savedMealIds?.includes(meal.idMeal)}
-                    initialWishlist={results.wishlistMealIds?.includes(meal.idMeal)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="card" style={{ padding: '2.5rem', textAlign: 'center' }}>
-                <p style={{ color: 'var(--text-muted)' }}>
-                  No exact database recipe matched all selected ingredients. Check the AI creations below!
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Section 2: Gemini AI Custom Creations */}
+          {/* Section 1: Gemini AI Custom Creations */}
           {results.aiSuggestions && results.aiSuggestions.length > 0 && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.8rem' }}>
@@ -319,6 +278,9 @@ const Leftovers = () => {
                 <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--secondary)' }}>
                   Custom AI Chef Suggestions
                 </h2>
+                <span className="badge badge-purple">
+                  {results.aiSuggestions.length} tailored recipes
+                </span>
               </div>
 
               <div style={{
@@ -381,21 +343,12 @@ const Leftovers = () => {
                       borderTop: '1px solid var(--border)'
                     }}>
                       <button
-                        onClick={() => handleSaveAiToCookbook(aiRecipe)}
-                        className="btn btn-secondary btn-sm"
-                        style={{ flex: 1 }}
-                      >
-                        <Heart size={15} color="#ef4444" />
-                        <span>Cookbook</span>
-                      </button>
-
-                      <button
                         onClick={() => handleSaveAiToWishlist(aiRecipe)}
                         className="btn btn-primary btn-sm"
-                        style={{ flex: 1 }}
+                        style={{ width: '100%', justifyContent: 'center' }}
                       >
                         <Bookmark size={15} />
-                        <span>Wishlist</span>
+                        <span>Save to Wishlist</span>
                       </button>
                     </div>
                   </div>
@@ -403,6 +356,34 @@ const Leftovers = () => {
               </div>
             </div>
           )}
+
+          {/* Section 2: Real Recipe Database Matches */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.8rem' }}>
+              <span style={{ fontSize: '1.4rem' }}>🍳</span>
+              <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--secondary)' }}>
+                Database Recipe Matches
+              </h2>
+            </div>
+
+            {results.realMatches && results.realMatches.length > 0 ? (
+              <div className="recipe-grid">
+                {results.realMatches.map((meal) => (
+                  <MealCard
+                    key={meal.idMeal}
+                    meal={meal}
+                    initialWishlist={results.wishlistMealIds?.includes(meal.idMeal)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="card" style={{ padding: '2.5rem', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-muted)' }}>
+                  No exact database recipe matched your specific ingredients. Check the AI creations above!
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

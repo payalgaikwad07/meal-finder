@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
-  Heart, 
   Bookmark, 
   Youtube, 
   ExternalLink, 
@@ -20,7 +19,6 @@ const RecipeDetail = () => {
   const { showToast } = useToast();
 
   const [meal, setMeal] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +30,6 @@ const RecipeDetail = () => {
     api.get(`/meals/${id}`)
       .then((res) => {
         setMeal(res.data.meal);
-        setIsFavorite(res.data.isFavorite || false);
         setIsWishlisted(res.data.isWishlisted || false);
       })
       .catch((err) => {
@@ -78,32 +75,6 @@ const RecipeDetail = () => {
       });
     }
   }
-
-  const handleFavoriteToggle = async () => {
-    if (!isAuthenticated) {
-      showToast('Please log in to save to your Cookbook', 'info');
-      return;
-    }
-
-    try {
-      if (isFavorite) {
-        await api.delete(`/favorites/${meal.idMeal}`);
-        setIsFavorite(false);
-        showToast('Removed from Cookbook', 'info');
-      } else {
-        await api.post('/favorites', {
-          meal_id: meal.idMeal,
-          meal_name: meal.strMeal,
-          meal_thumb: meal.strMealThumb
-        });
-        setIsFavorite(true);
-        confetti({ particleCount: 40, spread: 60 });
-        showToast('Saved to your Cookbook! ❤️');
-      }
-    } catch {
-      showToast('Action failed', 'error');
-    }
-  };
 
   const handleWishlistToggle = async () => {
     if (!isAuthenticated) {
@@ -176,34 +147,6 @@ const RecipeDetail = () => {
             boxShadow: 'var(--shadow)',
             border: '1px solid var(--border)'
           }}>
-            {/* Heart Toggle on Photo */}
-            <button
-              onClick={handleFavoriteToggle}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                width: '44px',
-                height: '44px',
-                borderRadius: '50%',
-                background: '#ffffff',
-                border: 'none',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                zIndex: 2
-              }}
-              title={isFavorite ? 'Remove from Cookbook' : 'Save to Cookbook'}
-            >
-              <Heart
-                size={22}
-                fill={isFavorite ? '#ef4444' : 'none'}
-                color={isFavorite ? '#ef4444' : '#718096'}
-              />
-            </button>
-
             <img
               src={meal.strMealThumb}
               alt={meal.strMeal}
@@ -222,6 +165,20 @@ const RecipeDetail = () => {
                 {meal.strArea}
               </span>
             )}
+            {meal.dietaryBadges && meal.dietaryBadges.map((badge) => (
+              <span 
+                key={badge} 
+                className="badge" 
+                style={{ 
+                  fontSize: '0.85rem', 
+                  padding: '6px 14px',
+                  background: badge === 'Vegetarian' || badge === 'Vegan' ? 'var(--success-light)' : '#e0f2fe',
+                  color: badge === 'Vegetarian' || badge === 'Vegan' ? 'var(--success)' : '#0284c7'
+                }}
+              >
+                {badge}
+              </span>
+            ))}
           </div>
 
           {/* Action Buttons */}

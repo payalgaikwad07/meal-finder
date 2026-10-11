@@ -42,14 +42,19 @@ const ShoppingList = () => {
     }));
   };
 
-  const handleCopyList = () => {
+  const handleCopyList = async () => {
     if (ingredients.length === 0) return;
     const textList = ingredients
       .map((item) => `• ${item.name} (${item.lines.join(', ')})`)
       .join('\n');
 
-    navigator.clipboard.writeText(`🛒 YumPlan Grocery List:\n\n${textList}`);
-    showToast('Grocery list copied to clipboard! 📋');
+    try {
+      await navigator.clipboard.writeText(`🛒 YumPlan Grocery List:\n\n${textList}`);
+      showToast('Grocery list copied to clipboard! 📋');
+    } catch (err) {
+      console.error('Clipboard write error:', err);
+      showToast('Failed to copy to clipboard', 'error');
+    }
   };
 
   const handlePrint = () => {
@@ -109,7 +114,7 @@ const ShoppingList = () => {
         }}>
           <div>
             <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--secondary)', marginBottom: '0.3rem' }}>
-              {source === 'planner' ? 'Weekly Grocery List' : 'Wishlist Grocery List'}
+              Saved Recipes Grocery List
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.98rem' }}>
               Consolidated ingredients from {totalMeals} {totalMeals === 1 ? 'recipe' : 'recipes'}
@@ -133,7 +138,7 @@ const ShoppingList = () => {
             <ShoppingBag size={48} color="#a0aec0" style={{ margin: '0 auto 1rem' }} />
             <h3 style={{ color: 'var(--secondary)' }}>No Ingredients in List</h3>
             <p style={{ color: 'var(--text-muted)', margin: '0.5rem 0 1.5rem' }}>
-              Add recipes to your {source === 'planner' ? 'weekly planner' : 'wishlist'} to generate your list.
+              Add recipes to your wishlist to generate your consolidated grocery list.
             </p>
             <Link to="/" className="btn btn-primary">Explore Recipes</Link>
           </div>

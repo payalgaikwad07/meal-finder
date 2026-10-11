@@ -61,7 +61,7 @@ const Login = () => {
           </div>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--secondary)', marginBottom: '0.4rem' }}>Welcome Back</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem' }}>
-            Log in to manage your recipes, cookbook & wishlist
+            Log in to manage your wishlist, grocery list & recipes
           </p>
         </div>
 

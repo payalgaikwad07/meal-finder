@@ -9,7 +9,6 @@ import SearchResults from './pages/SearchResults';
 import RecipeDetail from './pages/RecipeDetail';
 import CustomRecipeDetail from './pages/CustomRecipeDetail';
 import Cookbook from './pages/Cookbook';
-import Wishlist from './pages/Wishlist';
 import ShoppingList from './pages/ShoppingList';
 import Leftovers from './pages/Leftovers';
 import Login from './pages/Login';
@@ -25,14 +24,14 @@ function App() {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/meal/:id" element={<RecipeDetail />} />
           <Route path="/recipe/custom/:id" element={<CustomRecipeDetail />} />
-          <Route path="/cookbook" element={<Cookbook />} />
-          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/wishlist" element={<Cookbook />} />
+          <Route path="/cookbook" element={<Navigate to="/wishlist" replace />} />
+          <Route path="/saved" element={<Navigate to="/wishlist" replace />} />
+          <Route path="/planner" element={<Navigate to="/wishlist" replace />} />
           <Route path="/shopping-list" element={<ShoppingList />} />
           <Route path="/leftovers" element={<Leftovers />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          {/* Redirect /planner to wishlist */}
-          <Route path="/planner" element={<Navigate to="/wishlist" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
